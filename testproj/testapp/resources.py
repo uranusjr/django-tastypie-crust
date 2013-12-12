@@ -16,6 +16,6 @@ class UserResource(ActionResourceMixin, resources.ModelResource):
         u = super(UserResource, self).urls
         return u
 
-    @action()
+    @action
     def login(self, request, *args, **kwargs):
         return self.create_response(request, kwargs)
