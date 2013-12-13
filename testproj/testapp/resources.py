@@ -2,7 +2,8 @@
 # -*- coding: utf-8
 
 import copy
-from django.contrib.auth import get_user_model, authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.models import User
 from tastypie import resources
 from tastypie.authentication import SessionAuthentication, MultiAuthentication
 from tastypie.authorization import DjangoAuthorization
@@ -10,9 +11,6 @@ from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.http import HttpUnauthorized, HttpForbidden, HttpNotFound
 from tastycrust.resources import ActionResourceMixin, action
 from tastycrust.authentication import AnonymousAuthentication
-
-
-User = get_user_model()
 
 
 class UserResource(ActionResourceMixin, resources.ModelResource):
