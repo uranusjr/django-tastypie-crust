@@ -48,7 +48,7 @@ making those methods accessible throught Tastypie API.
     action(name=None, url=None, static=False,
            allowed=None, login_required=False)
 
-Decorator that make extra resource methods accessible through Tastypie API.
+Decorator that makes extra resource methods accessible through Tastypie API.
 
 
 --------------
@@ -67,7 +67,7 @@ anonymously.
 Example
 +++++++
 
-Some example usages can be found inside ``testproj/testapp``.
+Some example usages can be found inside ``testproj/testapp/resources.py``.
 
 
 +++++++
