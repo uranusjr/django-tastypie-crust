@@ -20,7 +20,7 @@ setup(
     license='BSD License',
     description='Goodies for Tastypie.',
     long_description=README,
-    url='',
+    url='https://github.com/uranusjr/django-tastypie-crust',
     author='Tzu-ping Chung',
     author_email='uranusjr@gmail.com',
     classifiers=[
