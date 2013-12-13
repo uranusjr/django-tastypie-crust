@@ -22,10 +22,10 @@ Alexander (*aka* thelonecabbage_ on GitHub), although I re-implemented the
 details quite a bit. Some other utilities are mostly collected from snippets
 floating around the Internet (StackOverflow_, `djangosnippets.org`_, etc.).
 
-_`tastypie-actions`: https://github.com/thelonecabbage/django-tastypie-actions
-_thelonecabbage: https://github.com/thelonecabbage
-_StackOverflow: http://stackoverflow.com/
-_`djangosnippets.org`: https://djangosnippets.org
+.. _`tastypie-actions`: https://github.com/thelonecabbage/django-tastypie-actions
+.. _thelonecabbage: https://github.com/thelonecabbage
+.. _StackOverflow: http://stackoverflow.com/
+.. _`djangosnippets.org`: https://djangosnippets.org
 
 
 ++++++++++
