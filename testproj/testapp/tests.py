@@ -2,7 +2,7 @@
 # -*- coding: utf-8
 
 import json
-from django.contrib.auth import get_user_model
+from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from nose.tools import eq_, assert_greater, assert_raises
 from tastypie.exceptions import NotFound
@@ -137,5 +137,5 @@ class UserResourceTests(TestCase):
         eq_(response.status_code, 201)  # Should allow authenticated write
 
         # Check that the POST is successful
-        current_count = get_user_model().objects.filter(is_active=True).count()
+        current_count = User.objects.filter(is_active=True).count()
         eq_(old_count + 1, current_count)
