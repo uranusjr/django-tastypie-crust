@@ -15,7 +15,7 @@ def _login(client=None):
     })
 
 
-class UserResourceTests(TestCase):
+class UserResourceActionTests(TestCase):
 
     fixtures = ['users.json']
 
@@ -107,3 +107,31 @@ class UserResourceTests(TestCase):
             client.get('/api/v1/user/not_an_action/')
         with assert_raises(NotFound):
             client.get('/api/v1/user/1/not_an_action/')
+
+
+class UserResourceTests(TestCase):
+
+    fixtures = ['users.json']
+
+    def test_authentication(self):
+        client = Client()
+        response = client.get('/api/v1/user/')
+        eq_(response.status_code, 200)  # Should allow anonymous read
+        old_count = len(json.loads(response.content)['objects'])
+
+        response = client.post(
+            '/api/v1/user/',
+            json.dumps({'username': 'new_user'}),
+            content_type='application/json'
+        )
+        eq_(response.status_code, 401)  # Should not allow anonymous write
+
+        _login(client)
+
+        response = client.post(
+            '/api/v1/user/',
+            json.dumps({'username': 'new_user'}),
+            content_type='application/json'
+        )
+        eq_(response.status_code, 201)  # Should allow authenticated write
+        eq_(old_count + 1, len(json.loads(response.content)['objects']))

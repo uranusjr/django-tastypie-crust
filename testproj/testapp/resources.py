@@ -4,9 +4,12 @@
 import copy
 from django.contrib.auth import get_user_model, authenticate, login, logout
 from tastypie import resources
+from tastypie.authentication import SessionAuthentication, MultiAuthentication
+from tastypie.authorization import DjangoAuthorization
 from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.http import HttpUnauthorized, HttpForbidden, HttpNotFound
 from tastycrust.resources import ActionResourceMixin, action
+from tastycrust.authentication import AnonymousAuthentication
 
 
 User = get_user_model()
@@ -17,6 +20,10 @@ class UserResource(ActionResourceMixin, resources.ModelResource):
         queryset = User.objects.filter(is_active=True)
         resource_name = 'user'
         fields = ['id', 'username']
+        authentication = MultiAuthentication(
+            AnonymousAuthentication(['get']), SessionAuthentication()
+        )
+        authorization = DjangoAuthorization()
 
     def not_an_action(self, request, *args, **kwargs):
         return self.create_response(request, {})
