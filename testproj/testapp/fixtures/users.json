@@ -1,0 +1,74 @@
+[
+{
+    "pk": 1,
+    "model": "auth.user",
+    "fields": {
+        "username": "uranusjr",
+        "first_name": "Tzu-ping",
+        "last_name": "Chung",
+        "is_active": true,
+        "is_superuser": true,
+        "is_staff": true,
+        "last_login": "2013-12-12T04:28:20.947Z",
+        "groups": [],
+        "user_permissions": [],
+        "password": "pbkdf2_sha256$12000$6OtJhg0sIVI9$NUJjRtSyUynUYI6SfRmBfBMMAbEye30NM8ORbK+sr4A=",
+        "email": "",
+        "date_joined": "2013-12-12T04:28:20.947Z"
+    }
+},
+{
+    "pk": 2,
+    "model": "auth.user",
+    "fields": {
+        "username": "normal_user",
+        "first_name": "",
+        "last_name": "",
+        "is_active": true,
+        "is_superuser": false,
+        "is_staff": false,
+        "last_login": "2013-12-12T04:28:20.947Z",
+        "groups": [],
+        "user_permissions": [],
+        "password": "pbkdf2_sha256$12000$6OtJhg0sIVI9$NUJjRtSyUynUYI6SfRmBfBMMAbEye30NM8ORbK+sr4A=",
+        "email": "",
+        "date_joined": "2013-12-12T04:28:20.947Z"
+    }
+},
+{
+    "pk": 3,
+    "model": "auth.user",
+    "fields": {
+        "username": "staff_user",
+        "first_name": "",
+        "last_name": "",
+        "is_active": true,
+        "is_superuser": false,
+        "is_staff": true,
+        "last_login": "2013-12-12T04:28:20.947Z",
+        "groups": [],
+        "user_permissions": [],
+        "password": "pbkdf2_sha256$12000$6OtJhg0sIVI9$NUJjRtSyUynUYI6SfRmBfBMMAbEye30NM8ORbK+sr4A=",
+        "email": "",
+        "date_joined": "2013-12-12T04:28:20.947Z"
+    }
+},
+{
+    "pk": 4,
+    "model": "auth.user",
+    "fields": {
+        "username": "inactive_user",
+        "first_name": "",
+        "last_name": "",
+        "is_active": false,
+        "is_superuser": false,
+        "is_staff": false,
+        "last_login": "2013-12-12T04:28:20.947Z",
+        "groups": [],
+        "user_permissions": [],
+        "password": "pbkdf2_sha256$12000$6OtJhg0sIVI9$NUJjRtSyUynUYI6SfRmBfBMMAbEye30NM8ORbK+sr4A=",
+        "email": "",
+        "date_joined": "2013-12-12T04:28:20.947Z"
+    }
+}
+]
