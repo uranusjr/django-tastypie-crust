@@ -60,13 +60,12 @@ class ActionResourceMixin(object):
             if action_url is not None:
                 pattern = r'^{action_url}{slash}$'
                 action_url = action_url.strip('/')
+            elif method.action_is_static:
+                pattern = r'^(?P<resource_name>{resource})/{name}{slash}$'
+                url_name = 'api_action_static_' + action_name
             else:
-                if method.action_is_static:
-                    pattern = r'^(?P<resource_name>{resource})/{name}{slash}$'
-                    url_name = 'api_action_static_' + action_name
-                else:
-                    pattern = (r'^(?P<resource_name>{resource})/'
-                               '(?P<{detail_uri}>.*?)/{name}{slash}$')
+                pattern = (r'^(?P<resource_name>{resource})/'
+                           '(?P<{detail_uri}>.*?)/{name}{slash}$')
             pattern = pattern.format(
                 action_url=action_url,
                 resource=self._meta.resource_name,
