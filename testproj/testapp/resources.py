@@ -1,11 +1,11 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 
-from django.http import HttpResponseForbidden
-from django.contrib.auth import get_user_model, authenticate, login
+import copy
+from django.contrib.auth import get_user_model, authenticate, login, logout
 from tastypie import resources
 from tastypie.exceptions import ImmediateHttpResponse
-from tastypie.http import HttpUnauthorized
+from tastypie.http import HttpUnauthorized, HttpForbidden, HttpNotFound
 from tastycrust.resources import ActionResourceMixin, action
 
 
@@ -52,7 +52,7 @@ class UserResource(ActionResourceMixin, resources.ModelResource):
         user = authenticate(username=username, password=password)
 
         if user is None:
-            raise ImmediateHttpResponse(HttpResponseForbidden)
+            raise ImmediateHttpResponse(HttpForbidden)
         if not user.is_active:
             raise ImmediateHttpResponse(HttpUnauthorized)
 
@@ -69,6 +69,24 @@ class UserResource(ActionResourceMixin, resources.ModelResource):
         data = {'first_name': user.first_name, 'last_name': user.last_name}
         return self.create_response(request, data)
 
-    @action
+    @action(allowed=('post',), static=True, login_required=True)
     def logout(self, request, *args, **kwargs):
-        return self.create_response(request, kwargs)
+        logout(request)
+        return self.create_response(request, {})
+
+    @action(login_required=True, name='profile')
+    def userprofile(self, request, *args, **kwargs):
+        fields = copy.copy(self._meta.fields)
+        try:
+            target_user = User.objects.get(pk=kwargs['pk'])
+        except User.DoesNotExist:
+            raise ImmediateHttpResponse(HttpNotFound)
+        else:
+            if target_user == request.user:
+                fields += ['first_name', 'last_name']
+            data = {k: getattr(target_user, k) for k in fields}
+            return self.create_response(request, data)
+
+    @action(static=True, login_required=True, url='/user/email/')
+    def my_email(self, request, *args, **kwargs):
+        return self.create_response(request, {'email': request.user.email})

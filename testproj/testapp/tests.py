@@ -49,6 +49,15 @@ class UserResourceTests(TestCase):
         response = _login(client)
         eq_(response.status_code, 200)
 
+    # Test login_required
+    def test_action_logout(self):
+        client = Client()
+        response = client.post('/api/v1/user/logout/')
+        eq_(response.status_code, 401)  # Unauthorized
+        _login(client)
+        response = client.post('/api/v1/user/logout/')
+        eq_(response.status_code, 200)
+
     # Test plain action (default static=False)
     def test_action_full_name(self):
         client = Client()
@@ -57,6 +66,39 @@ class UserResourceTests(TestCase):
         data = json.loads(response.content)
         eq_(data['first_name'], 'Tzu-ping')
         eq_(data['last_name'], 'Chung')
+
+    # Test custom action name
+    def test_action_profile(self):
+        client = Client()
+        _login(client)
+
+        with assert_raises(NotFound):
+            client.get('/api/v1/user/1/userprofile/')
+
+        response = client.get('/api/v1/user/1/profile/')
+        eq_(response.status_code, 200)
+        eq_(json.loads(response.content), {
+            'first_name': 'Tzu-ping',
+            'last_name': 'Chung',
+            'id': 1,
+            'username': 'uranusjr'
+        })
+
+        response = client.get('/api/v1/user/2/profile/')
+        eq_(response.status_code, 200)
+        eq_(json.loads(response.content), {'id': 2, 'username': 'normal_user'})
+
+    # Test custom action URL
+    def test_action_email(self):
+        client = Client()
+        _login(client)
+
+        with assert_raises(NotFound):
+            client.get('/api/v1/user/my_email/')
+
+        response = client.get('/api/v1/user/email/')
+        eq_(response.status_code, 200)
+        eq_(json.loads(response.content), {'email': 'uranusjr@gmail.com'})
 
     # Test non-action
     def test_non_action(self):
