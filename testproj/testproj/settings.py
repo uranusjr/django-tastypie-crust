@@ -38,6 +38,7 @@ INSTALLED_APPS = (
     'django.contrib.staticfiles',
     'tastypie',
     'tastycrust',
+    'django_nose',
     'testapp'
 )
 
@@ -87,3 +88,9 @@ STATIC_URL = '/static/'
 TASTYPIE_DEFAULT_FORMATS = ["json"]
 
 TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+
+NOSE_ARGS = [
+    '--cover-package=tastycrust',
+    '--with-coverage',
+    '--cover-erase'
+]
