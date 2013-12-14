@@ -2,7 +2,7 @@
 # -*- coding: utf-8
 
 import copy
-from django.contrib.auth import authenticate, login, logout
+from django.contrib import auth
 from django.contrib.auth.models import User
 from tastypie import resources
 from tastypie.authentication import SessionAuthentication, MultiAuthentication
@@ -11,6 +11,7 @@ from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.http import HttpUnauthorized, HttpForbidden, HttpNotFound
 from tastycrust.resources import ActionResourceMixin, action
 from tastycrust.authentication import AnonymousAuthentication
+from tastycrust.utils import login, LOGIN_SOURCE_BASIC
 
 
 class UserResource(ActionResourceMixin, resources.ModelResource):
@@ -25,6 +26,12 @@ class UserResource(ActionResourceMixin, resources.ModelResource):
 
     def not_an_action(self, request, *args, **kwargs):
         return self.create_response(request, {})
+
+    def _serialize_user(self, request, user):
+        bundle = self.build_bundle(obj=user, request=request)
+        bundle = self.full_dehydrate(bundle)
+        bundle = self.alter_detail_data_to_serialize(request, bundle)
+        return bundle
 
     @action(static=True)
     def all(self, request, *args, **kwargs):
@@ -54,19 +61,43 @@ class UserResource(ActionResourceMixin, resources.ModelResource):
     def login(self, request, *args, **kwargs):
         username = request.POST['username']
         password = request.POST['password']
-        user = authenticate(username=username, password=password)
+        user = auth.authenticate(username=username, password=password)
 
         if user is None:
-            raise ImmediateHttpResponse(HttpForbidden)
+            raise ImmediateHttpResponse(HttpForbidden())
         if not user.is_active:
-            raise ImmediateHttpResponse(HttpUnauthorized)
+            raise ImmediateHttpResponse(HttpUnauthorized())
 
-        login(request, user)
+        auth.login(request, user)
+        return self.create_response(
+            request, self._serialize_user(request, user)
+        )
 
-        bundle = self.build_bundle(obj=user, request=request)
-        bundle = self.full_dehydrate(bundle)
-        bundle = self.alter_detail_data_to_serialize(request, bundle)
-        return self.create_response(request, bundle)
+    @action(allowed=('post',), static=True)
+    def login_post(self, request, *args, **kwargs):
+        user = login(request)
+
+        if user is None:
+            raise ImmediateHttpResponse(HttpForbidden())
+        if not user.is_active:
+            raise ImmediateHttpResponse(HttpUnauthorized())
+
+        return self.create_response(
+            request, self._serialize_user(request, user)
+        )
+
+    @action(allowed=('post',), static=True)
+    def login_basic(self, request, *args, **kwargs):
+        user = login(request, source=LOGIN_SOURCE_BASIC)
+
+        if user is None:
+            raise ImmediateHttpResponse(HttpForbidden())
+        if not user.is_active:
+            raise ImmediateHttpResponse(HttpUnauthorized())
+
+        return self.create_response(
+            request, self._serialize_user(request, user)
+        )
 
     @action
     def full_name(self, request, *args, **kwargs):
@@ -76,7 +107,7 @@ class UserResource(ActionResourceMixin, resources.ModelResource):
 
     @action(allowed=('post',), static=True, login_required=True)
     def logout(self, request, *args, **kwargs):
-        logout(request)
+        auth.logout(request)
         return self.create_response(request, {})
 
     @action(login_required=True, name='profile')
@@ -85,7 +116,7 @@ class UserResource(ActionResourceMixin, resources.ModelResource):
         try:
             target_user = User.objects.get(pk=kwargs['pk'])
         except User.DoesNotExist:
-            raise ImmediateHttpResponse(HttpNotFound)
+            raise ImmediateHttpResponse(HttpNotFound())
         else:
             if target_user == request.user:
                 fields += ['first_name', 'last_name']
