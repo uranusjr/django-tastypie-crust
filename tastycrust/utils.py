@@ -12,6 +12,7 @@ import six
 from django.contrib import auth
 from django.utils.encoding import force_text
 from tastypie.serializers import Serializer, UnsupportedFormat
+from tastypie.bundle import Bundle
 
 
 def _serializer_factory(formats):
@@ -70,11 +71,16 @@ def authenticate(request, source=AUTH_SOURCE_POST, formats=None):
     return user
 
 
-def owned(bundle=None, field='user'):
+def owned(attribute='user'):
+
+    bundle = None
+    if isinstance(attribute, Bundle):
+        bundle = attribute
+        attribute = 'user'
 
     def _owned(bundle):
-        if field:
-            user = getattr(bundle.obj, field, None)
+        if attribute:
+            user = getattr(bundle.obj, attribute, None)
         else:
             user = bundle.obj
         return (user is not None and user == bundle.request.user)

@@ -17,7 +17,7 @@ from .models import Homepage
 
 class UserResource(ActionResourceMixin, resources.ModelResource):
 
-    email = fields.CharField(attribute='email', use_in=owned(field=''))
+    email = fields.CharField(attribute='email', use_in=owned(attribute=''))
 
     class Meta:
         queryset = User.objects.filter(is_active=True)
