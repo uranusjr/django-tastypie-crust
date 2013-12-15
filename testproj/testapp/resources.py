@@ -12,6 +12,7 @@ from tastypie.http import HttpUnauthorized, HttpForbidden, HttpNotFound
 from tastycrust.resources import ActionResourceMixin, action
 from tastycrust.authentication import AnonymousAuthentication
 from tastycrust.utils import owned
+from .models import Homepage
 
 
 class UserResource(ActionResourceMixin, resources.ModelResource):
@@ -103,3 +104,15 @@ class UserResource(ActionResourceMixin, resources.ModelResource):
     @action(static=True, login_required=True, url='/user/email/')
     def my_email(self, request, *args, **kwargs):
         return self.create_response(request, {'email': request.user.email})
+
+
+class HomePageResource(resources.ModelResource):
+
+    url = fields.CharField(attribute='url', use_in=owned)
+    user = fields.ToOneField(attribute='user', to=UserResource)
+
+    class Meta:
+        queryset = Homepage.objects.all()
+        resource_name = 'homepage'
+        fields = ['id']
+        authentication = SessionAuthentication()

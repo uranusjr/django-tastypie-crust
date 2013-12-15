@@ -148,7 +148,7 @@ class UserResourceTests(TestCase):
 
 class UtilsTests(TestCase):
 
-    fixtures = ['users.json']
+    fixtures = ['users.json', 'homepages.json']
 
     def test_auth_source_basic(self):
         # No auth
@@ -271,5 +271,15 @@ class UtilsTests(TestCase):
         assert_false('email' in json.loads(response.content))
 
         _login(client)
+
+        # Mine
         response = client.get('/api/v1/user/1/')
         assert_true('email' in json.loads(response.content))
+
+        # Mine
+        response = client.get('/api/v1/homepage/1/')
+        assert_true('url' in json.loads(response.content))
+
+        # Not mine
+        response = client.get('/api/v1/homepage/2/')
+        assert_false('url' in json.loads(response.content))

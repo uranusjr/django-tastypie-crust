@@ -1,0 +1,18 @@
+[
+{
+    "pk": 1,
+    "model": "testapp.homepage",
+    "fields": {
+        "user": 1,
+        "url": "http://uranusjr.logdown.com/"
+    }
+},
+{
+    "pk": 2,
+    "model": "testapp.homepage",
+    "fields": {
+        "user": 2,
+        "url": "http://www.example.com/"
+    }
+}
+]
