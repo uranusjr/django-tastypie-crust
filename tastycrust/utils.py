@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__all__ = ['authenticate', 'AUTH_SOURCE_BASIC', 'AUTH_SOURCE_POST']
+__all__ = ['authenticate', 'AUTH_SOURCE_BASIC', 'AUTH_SOURCE_POST', 'owned']
 
 
 import base64
@@ -79,7 +79,7 @@ def owned(bundle=None, field='user'):
             user = bundle.obj
         return (user is not None and user == bundle.request.user)
 
-    if bundle is None:  # Used as use_in=owned(...)
+    if bundle is None:  # Used as use_in=owned(...); invoked on resource setup
         return _owned
     else:               # Used as use_in=owned and this is invoked by Tastypie
         return _owned(bundle)
