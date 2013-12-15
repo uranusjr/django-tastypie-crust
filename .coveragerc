@@ -1,0 +1,2 @@
+[report]
+omit = tastycrust/__init__.py
