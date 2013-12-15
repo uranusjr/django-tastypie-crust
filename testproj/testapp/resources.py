@@ -11,7 +11,6 @@ from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.http import HttpUnauthorized, HttpForbidden, HttpNotFound
 from tastycrust.resources import ActionResourceMixin, action
 from tastycrust.authentication import AnonymousAuthentication
-from tastycrust import utils
 
 
 class UserResource(ActionResourceMixin, resources.ModelResource):
