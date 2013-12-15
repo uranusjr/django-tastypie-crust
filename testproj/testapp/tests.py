@@ -8,7 +8,8 @@ from django.contrib.auth.models import User
 from django.test import Client, TestCase
 from django.test.client import RequestFactory
 from nose.tools import (
-    ok_, eq_, assert_greater, assert_raises, assert_is_none, assert_is_not_none
+    ok_, eq_, assert_raises, assert_is_none, assert_is_not_none,
+    assert_greater, assert_false, assert_true
 )
 from tastypie.exceptions import NotFound
 from tastycrust import utils
@@ -263,3 +264,12 @@ class UtilsTests(TestCase):
         )
         user = utils.authenticate(request)
         assert_is_none(user)
+
+    def test_owned(self):
+        client = Client()
+        response = client.get('/api/v1/user/1/')
+        assert_false('email' in json.loads(response.content))
+
+        _login(client)
+        response = client.get('/api/v1/user/1/')
+        assert_true('email' in json.loads(response.content))

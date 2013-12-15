@@ -68,3 +68,18 @@ def authenticate(request, source=AUTH_SOURCE_POST, formats=None):
         return None
     user = auth.authenticate(**credentials)
     return user
+
+
+def owned(bundle=None, field='user'):
+
+    def _owned(bundle):
+        if field:
+            user = getattr(bundle.obj, field, None)
+        else:
+            user = bundle.obj
+        return (user is not None and user == bundle.request.user)
+
+    if bundle is None:  # Used as use_in=owned(...)
+        return _owned
+    else:               # Used as use_in=owned and this is invoked by Tastypie
+        return _owned(bundle)

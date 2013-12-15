@@ -4,16 +4,20 @@
 import copy
 from django.contrib import auth
 from django.contrib.auth.models import User
-from tastypie import resources
+from tastypie import resources, fields
 from tastypie.authentication import SessionAuthentication, MultiAuthentication
 from tastypie.authorization import DjangoAuthorization
 from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.http import HttpUnauthorized, HttpForbidden, HttpNotFound
 from tastycrust.resources import ActionResourceMixin, action
 from tastycrust.authentication import AnonymousAuthentication
+from tastycrust.utils import owned
 
 
 class UserResource(ActionResourceMixin, resources.ModelResource):
+
+    email = fields.CharField(attribute='email', use_in=owned(field=''))
+
     class Meta:
         queryset = User.objects.filter(is_active=True)
         resource_name = 'user'
