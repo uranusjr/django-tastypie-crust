@@ -1,15 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 
-__all__ = ['ActionResourceMixin', 'action', 'is_action']
-
-
+from __future__ import unicode_literals
 import inspect
 from functools import wraps
 from django.conf.urls import url
 from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.http import HttpUnauthorized
 from tastypie.utils import trailing_slash
+
+
+__all__ = ['ActionResourceMixin', 'action', 'is_action']
 
 
 def is_action(obj):

@@ -1,9 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-__all__ = ['authenticate', 'AUTH_SOURCE_BASIC', 'AUTH_SOURCE_POST', 'owned']
-
-
+from __future__ import unicode_literals
 import base64
 import collections
 import copy
@@ -13,6 +11,9 @@ from django.contrib import auth
 from django.utils.encoding import force_text
 from tastypie.serializers import Serializer, UnsupportedFormat
 from tastypie.bundle import Bundle
+
+
+__all__ = ['authenticate', 'AUTH_SOURCE_BASIC', 'AUTH_SOURCE_POST', 'owned']
 
 
 def _serializer_factory(formats):
