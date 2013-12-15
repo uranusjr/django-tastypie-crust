@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8
 
-__all__ = ['ActionResourceMixin', 'action']
+__all__ = ['ActionResourceMixin', 'action', 'is_action']
 
 
 import inspect
