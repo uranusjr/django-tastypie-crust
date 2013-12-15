@@ -6,8 +6,12 @@ import json
 import urllib
 from django.contrib.auth.models import User
 from django.test import Client, TestCase
-from nose.tools import eq_, assert_greater, assert_raises
+from django.test.client import RequestFactory
+from nose.tools import (
+    ok_, eq_, assert_greater, assert_raises, assert_is_none, assert_is_not_none
+)
 from tastypie.exceptions import NotFound
+from tastycrust import utils
 
 
 def _login(client):
@@ -140,57 +144,122 @@ class UserResourceTests(TestCase):
         current_count = User.objects.filter(is_active=True).count()
         eq_(old_count + 1, current_count)
 
-    def test_login_post(self):
-        client = Client()
-        credentials = {'username': 'uranusjr', 'password': 'admin'}
 
-        response = client.post(
-            '/api/v1/user/login_post/',
-            json.dumps(credentials), content_type='application/json'
+class UtilsTests(TestCase):
+
+    fixtures = ['users.json']
+
+    def test_auth_source_basic(self):
+        # No auth
+        request = RequestFactory().post('/api/v1/user/authenticate/')
+        credentials = utils.AUTH_SOURCE_BASIC(request)
+        eq_(credentials, {})
+
+        # Wrong format
+        request = RequestFactory().post('/api/v1/user/authenticate/')
+        request.META['HTTP_AUTHORIZATION'] = 'NotBasic~~%s' % (
+            base64.encodestring('%s:%s' % ('uranusjr', 'hehe'))
         )
-        eq_(response.status_code, 200)
+        credentials = utils.AUTH_SOURCE_BASIC(request)
+        eq_(credentials, {})
 
-        response = client.post(
-            '/api/v1/user/login_post/',
-            urllib.urlencode(credentials),
+        # OK
+        request = RequestFactory().post('/api/v1/user/authenticate/')
+        request.META['HTTP_AUTHORIZATION'] = 'Basic %s' % (
+            base64.encodestring('%s:%s' % ('uranusjr', 'admin'))
+        )
+        credentials = utils.AUTH_SOURCE_BASIC(request)
+        ok_(credentials)
+
+    def test_auth_source_post_form(self):
+        # No auth
+        request = RequestFactory().post(
+            '/api/v1/user/authenticate/',
             content_type='application/x-www-form-urlencoded'
         )
-        eq_(response.status_code, 200)
+        credentials = utils.AUTH_SOURCE_POST(request)
+        eq_(credentials, {})
 
-        # Incorrect credentials
-        credentials['password'] = 'hehe'
-        response = client.post(
-            '/api/v1/user/login_post/',
-            urllib.urlencode(credentials),
+        # Wrong form format
+        request = RequestFactory().post(
+            '/api/v1/user/authenticate/',
+            'badgerbadgerbadgerbadger',
             content_type='application/x-www-form-urlencoded'
         )
-        eq_(response.status_code, 401)
+        credentials = utils.AUTH_SOURCE_POST(request)
+        eq_(credentials, {})
 
-    def test_login_basic(self):
-        client = Client()
-
-        # No auth header
-        response = client.post('/api/v1/user/login_basic/')
-        eq_(response.status_code, 401)
-
-        credentials = base64.encodestring('%s:%s' % ('uranusjr', 'admin'))
-        response = client.post(
-            '/api/v1/user/login_basic/',
-            HTTP_AUTHORIZATION=('Basic %s' % credentials)
+        # Correct form
+        my_credentials = {'username': 'uranusjr', 'password': 'admin'}
+        request = RequestFactory().post(
+            '/api/v1/user/authenticate/',
+            urllib.urlencode(my_credentials),
+            content_type='application/x-www-form-urlencoded'
         )
-        eq_(response.status_code, 200)
+        credentials = utils.AUTH_SOURCE_POST(request)
+        eq_(credentials, my_credentials)
 
-        # Incorrect auth header format
-        response = client.post(
-            '/api/v1/user/login_basic/',
-            HTTP_AUTHORIZATION=('%s' % credentials)
+    def test_auth_source_post_json(self):
+        # No auth
+        request = RequestFactory().post(
+            '/api/v1/user/authenticate/', content_type='application/json'
         )
-        eq_(response.status_code, 401)
+        credentials = utils.AUTH_SOURCE_POST(request)
+        eq_(credentials, {})
 
-        # Incorrect credentials
-        credentials = base64.encodestring('%s:%s' % ('uranusjr', 'hehe'))
-        response = client.post(
-            '/api/v1/user/login_basic/',
-            HTTP_AUTHORIZATION=('Basic %s' % credentials)
+        # Wrong JSON format
+        request = RequestFactory().post(
+            '/api/v1/user/authenticate/',
+            json.dumps('hello world'),
+            content_type='application/json'
         )
-        eq_(response.status_code, 401)
+        credentials = utils.AUTH_SOURCE_POST(request)
+        eq_(credentials, {})
+
+        # Correct JSON
+        my_credentials = {'username': 'uranusjr', 'password': 'admin'}
+        request = RequestFactory().post(
+            '/api/v1/user/authenticate/',
+            json.dumps(my_credentials),
+            content_type='application/json'
+        )
+        credentials = utils.AUTH_SOURCE_POST(request)
+        eq_(credentials, my_credentials)
+
+        # Restrict format
+        request = RequestFactory().post(
+            '/api/v1/user/authenticate/',
+            json.dumps(my_credentials),
+            content_type='application/json'
+        )
+        credentials = utils.AUTH_SOURCE_POST(request, formats=['form'])
+        eq_(credentials, {})
+
+    # TODO: Tests for YAML, XML, etc.
+
+    def test_authenticate(self):
+        # No auth
+        request = RequestFactory().post('/api/v1/user/authenticate/')
+        user = utils.authenticate(request)
+        assert_is_none(user)
+
+        my_credentials = {'username': 'uranusjr', 'password': 'admin'}
+
+        # Correct credentials
+        request = RequestFactory().post(
+            '/api/v1/user/authenticate/',
+            urllib.urlencode(my_credentials),
+            content_type='application/x-www-form-urlencoded'
+        )
+        user = utils.authenticate(request)
+        assert_is_not_none(user)
+
+        # Wrong credentials
+        my_credentials['password'] = 'hehe'
+        request = RequestFactory().post(
+            '/api/v1/user/authenticate/',
+            urllib.urlencode(my_credentials),
+            content_type='application/x-www-form-urlencoded'
+        )
+        user = utils.authenticate(request)
+        assert_is_none(user)

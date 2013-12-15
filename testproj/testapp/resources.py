@@ -11,7 +11,7 @@ from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.http import HttpUnauthorized, HttpForbidden, HttpNotFound
 from tastycrust.resources import ActionResourceMixin, action
 from tastycrust.authentication import AnonymousAuthentication
-from tastycrust.utils import login, LOGIN_SOURCE_BASIC
+from tastycrust import utils
 
 
 class UserResource(ActionResourceMixin, resources.ModelResource):
@@ -64,37 +64,11 @@ class UserResource(ActionResourceMixin, resources.ModelResource):
         user = auth.authenticate(username=username, password=password)
 
         if user is None:
-            raise ImmediateHttpResponse(HttpForbidden())
-        if not user.is_active:
             raise ImmediateHttpResponse(HttpUnauthorized())
+        if not user.is_active:
+            raise ImmediateHttpResponse(HttpForbidden())
 
         auth.login(request, user)
-        return self.create_response(
-            request, self._serialize_user(request, user)
-        )
-
-    @action(allowed=('post',), static=True)
-    def login_post(self, request, *args, **kwargs):
-        user = login(request)
-
-        if user is None:
-            raise ImmediateHttpResponse(HttpForbidden())
-        if not user.is_active:
-            raise ImmediateHttpResponse(HttpUnauthorized())
-
-        return self.create_response(
-            request, self._serialize_user(request, user)
-        )
-
-    @action(allowed=('post',), static=True)
-    def login_basic(self, request, *args, **kwargs):
-        user = login(request, source=LOGIN_SOURCE_BASIC)
-
-        if user is None:
-            raise ImmediateHttpResponse(HttpForbidden())
-        if not user.is_active:
-            raise ImmediateHttpResponse(HttpUnauthorized())
-
         return self.create_response(
             request, self._serialize_user(request, user)
         )
