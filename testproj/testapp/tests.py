@@ -183,8 +183,7 @@ class UtilsTests(TestCase):
 
         # Wrong form format
         request = RequestFactory().post(
-            '/api/v1/user/authenticate/',
-            'badgerbadgerbadgerbadger',
+            '/api/v1/user/authenticate/', 'badgerbadgerbadgerbadger',
             content_type='application/x-www-form-urlencoded'
         )
         credentials = utils.AUTH_SOURCE_POST(request)
@@ -193,8 +192,7 @@ class UtilsTests(TestCase):
         # Correct form
         my_credentials = {'username': 'uranusjr', 'password': 'admin'}
         request = RequestFactory().post(
-            '/api/v1/user/authenticate/',
-            urllib.urlencode(my_credentials),
+            '/api/v1/user/authenticate/', urllib.urlencode(my_credentials),
             content_type='application/x-www-form-urlencoded'
         )
         credentials = utils.AUTH_SOURCE_POST(request)
@@ -210,8 +208,7 @@ class UtilsTests(TestCase):
 
         # Wrong JSON format
         request = RequestFactory().post(
-            '/api/v1/user/authenticate/',
-            json.dumps('hello world'),
+            '/api/v1/user/authenticate/', json.dumps('hello world'),
             content_type='application/json'
         )
         credentials = utils.AUTH_SOURCE_POST(request)
@@ -220,8 +217,7 @@ class UtilsTests(TestCase):
         # Correct JSON
         my_credentials = {'username': 'uranusjr', 'password': 'admin'}
         request = RequestFactory().post(
-            '/api/v1/user/authenticate/',
-            json.dumps(my_credentials),
+            '/api/v1/user/authenticate/', json.dumps(my_credentials),
             content_type='application/json'
         )
         credentials = utils.AUTH_SOURCE_POST(request)
@@ -229,8 +225,7 @@ class UtilsTests(TestCase):
 
         # Restrict format
         request = RequestFactory().post(
-            '/api/v1/user/authenticate/',
-            json.dumps(my_credentials),
+            '/api/v1/user/authenticate/', json.dumps(my_credentials),
             content_type='application/json'
         )
         credentials = utils.AUTH_SOURCE_POST(request, formats=['form'])
@@ -244,8 +239,7 @@ class UtilsTests(TestCase):
 
         # Wrong form format
         request = RequestFactory().post(
-            '/api/v1/user/authenticate/',
-            'badgerbadgerbadgerbadger',
+            '/api/v1/user/authenticate/', 'badgerbadgerbadgerbadger',
             content_type='multipart/form-data'
         )
         credentials = utils.AUTH_SOURCE_POST(request)
@@ -254,8 +248,7 @@ class UtilsTests(TestCase):
         # Correct form
         my_credentials = {'username': 'uranusjr', 'password': 'admin'}
         request = RequestFactory().post(
-            '/api/v1/user/authenticate/',
-            my_credentials,
+            '/api/v1/user/authenticate/', my_credentials,
         )
         credentials = utils.AUTH_SOURCE_POST(request)
         eq_(credentials, my_credentials)
@@ -272,9 +265,7 @@ class UtilsTests(TestCase):
 
         # Correct credentials
         request = RequestFactory().post(
-            '/api/v1/user/authenticate/',
-            urllib.urlencode(my_credentials),
-            content_type='application/x-www-form-urlencoded'
+            '/api/v1/user/authenticate/', my_credentials,
         )
         user = utils.authenticate(request)
         assert_is_not_none(user)
@@ -282,9 +273,7 @@ class UtilsTests(TestCase):
         # Wrong credentials
         my_credentials['password'] = 'hehe'
         request = RequestFactory().post(
-            '/api/v1/user/authenticate/',
-            urllib.urlencode(my_credentials),
-            content_type='application/x-www-form-urlencoded'
+            '/api/v1/user/authenticate/', my_credentials,
         )
         user = utils.authenticate(request)
         assert_is_none(user)
