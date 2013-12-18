@@ -7,6 +7,8 @@ import collections
 import copy
 import urlparse
 import six
+from io import StringIO
+from django.http.multipartparser import MultiPartParserError
 from django.contrib import auth
 from django.utils.encoding import force_text
 from tastypie.serializers import Serializer, UnsupportedFormat
@@ -19,6 +21,7 @@ __all__ = ['authenticate', 'AUTH_SOURCE_BASIC', 'AUTH_SOURCE_POST', 'owned']
 def _serializer_factory(formats):
     content_types = copy.copy(Serializer.content_types)
     content_types['form'] = 'application/x-www-form-urlencoded'
+    content_types['form_data'] = 'multipart/form-data'
 
     if formats is None:
         formats = Serializer.formats + ['form']
@@ -29,6 +32,15 @@ def _serializer_factory(formats):
     class _Serializer(Serializer):
         def from_form(self, data):
             return dict(urlparse.parse_qsl(data))
+
+        def from_form_data(self, data):
+            try:
+                post, files = self.request.parse_file_upload(
+                    self.request.META, StringIO(data)
+                )
+            except MultiPartParserError:
+                post = {}
+            return {k: post[k] for k in post}
 
     _Serializer.formats = formats
     _Serializer.content_types = content_types
@@ -50,6 +62,7 @@ def AUTH_SOURCE_BASIC(request, formats=None):
 
 def AUTH_SOURCE_POST(request, formats=None):
     serializer = _serializer_factory(formats)()
+    serializer.request = request
     format = request.META.get('CONTENT_TYPE', 'application/json')
 
     data = request.body

@@ -236,6 +236,30 @@ class UtilsTests(TestCase):
         credentials = utils.AUTH_SOURCE_POST(request, formats=['form'])
         eq_(credentials, {})
 
+    def test_auth_source_post_multipart_form(self):
+        # No auth
+        request = RequestFactory().post('/api/v1/user/authenticate/')
+        credentials = utils.AUTH_SOURCE_POST(request)
+        eq_(credentials, {})
+
+        # Wrong form format
+        request = RequestFactory().post(
+            '/api/v1/user/authenticate/',
+            'badgerbadgerbadgerbadger',
+            content_type='multipart/form-data'
+        )
+        credentials = utils.AUTH_SOURCE_POST(request)
+        eq_(credentials, {})
+
+        # Correct form
+        my_credentials = {'username': 'uranusjr', 'password': 'admin'}
+        request = RequestFactory().post(
+            '/api/v1/user/authenticate/',
+            my_credentials,
+        )
+        credentials = utils.AUTH_SOURCE_POST(request)
+        eq_(credentials, my_credentials)
+
     # TODO: Tests for YAML, XML, etc.
 
     def test_authenticate(self):
