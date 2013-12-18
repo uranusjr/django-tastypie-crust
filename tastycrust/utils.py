@@ -24,7 +24,7 @@ def _serializer_factory(formats):
     content_types['form_data'] = 'multipart/form-data'
 
     if formats is None:
-        formats = Serializer.formats + ['form']
+        formats = Serializer.formats + ['form', 'form_data']
     else:
         content_types = {key: value for key, value in content_types.items()
                          if key in formats}
