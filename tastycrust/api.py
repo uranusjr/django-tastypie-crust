@@ -2,18 +2,32 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+from copy import copy
 from importlib import import_module
-from inspect import isclass, getmembers
+from inspect import isclass
 from django.conf import settings
+from django.utils.module_loading import module_has_submodule
 from tastypie.api import Api as VanillaApi
 from tastypie.resources import Resource
 
 
-__all__ = ['Api']
+__all__ = ['Api', 'autodiscover']
 
 
 def _is_resource_class(obj):
     return isclass(obj) and issubclass(obj, Resource)
+
+
+def autodiscover():
+    for app_name in settings.INSTALLED_APPS:
+        app = import_module(app_name)
+        try:
+            old_registry = copy(api._registry)
+            import_module('.'.join([app_name, 'resources']))
+        except:
+            api._registry = old_registry
+            if module_has_submodule(app, 'resources'):
+                raise
 
 
 class Api(VanillaApi):
@@ -27,15 +41,5 @@ class Api(VanillaApi):
         resource = getattr(module, resource_name)()
         return super(Api, self).register(resource, canonical)
 
-    def autodiscover(self):
-        for app_name in settings.INSTALLED_APPS:
-            if app_name == 'tastypie':
-                continue
-            try:
-                module = import_module('.'.join([app_name, 'resources']))
-            except ImportError:
-                continue
-            for name, klass in getmembers(module, _is_resource_class):
-                resource = klass()
-                if not getattr(resource._meta, 'abstract', False):
-                    self.register(resource)
+
+api = Api(api_name='v1')
