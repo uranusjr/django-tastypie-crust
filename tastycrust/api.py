@@ -11,21 +11,17 @@ from tastypie.api import Api as VanillaApi
 from tastypie.resources import Resource
 
 
-__all__ = ['Api', 'autodiscover']
-
-
-def _is_resource_class(obj):
-    return isclass(obj) and issubclass(obj, Resource)
+__all__ = ['Api', 'autodiscover', 'v1']
 
 
 def autodiscover():
     for app_name in settings.INSTALLED_APPS:
         app = import_module(app_name)
         try:
-            old_registry = copy(api._registry)
+            old_registry = copy(v1._registry)
             import_module('.'.join([app_name, 'resources']))
         except:
-            api._registry = old_registry
+            v1._registry = old_registry
             if module_has_submodule(app, 'resources'):
                 raise
 
@@ -34,7 +30,7 @@ class Api(VanillaApi):
     def register(self, resource, canonical=True, module_name='resources'):
         if isinstance(resource, Resource):
             return super(Api, self).register(resource, canonical)
-        elif _is_resource_class(resource):
+        elif isclass(resource) and issubclass(resource, Resource):
             return super(Api, self).register(resource(), canonical)
         app_name, resource_name = resource.split('.')
         module = import_module('.'.join([app_name, module_name]))
@@ -42,4 +38,4 @@ class Api(VanillaApi):
         return super(Api, self).register(resource, canonical)
 
 
-api = Api(api_name='v1')
+v1 = Api(api_name='v1')
