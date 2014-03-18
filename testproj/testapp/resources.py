@@ -9,6 +9,7 @@ from tastypie.authentication import (
     BasicAuthentication, SessionAuthentication, MultiAuthentication,
 )
 from tastypie.authorization import DjangoAuthorization
+from tastypie.throttle import CacheThrottle
 from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.http import HttpUnauthorized, HttpForbidden, HttpNotFound
 from tastycrust.resources import ActionResourceMixin, action
@@ -126,6 +127,25 @@ class HomePageResource(ActionResourceMixin, resources.ModelResource):
             page = Homepage.objects.get(user=request.user)
         except Homepage.DoesNotExist:
             raise ImmediateHttpResponse(HttpNotFound())
+        bundle = self.build_bundle(obj=page, request=request)
+        bundle = self.full_dehydrate(bundle)
+        bundle = self.alter_detail_data_to_serialize(request, bundle)
+        return self.create_response(request, bundle)
+
+
+class ThrottledHomePageResource(ActionResourceMixin, resources.ModelResource):
+
+    class Meta:
+        queryset = Homepage.objects.all()
+        resource_name = 'homepage2'
+        fields = ['id']
+        authentication = BasicAuthentication()
+        authorization = DjangoAuthorization()
+        throttle = CacheThrottle(throttle_at=1)
+
+    @action(static=True, throttled=True)
+    def random(self, request, *args, **kwargs):
+        page = Homepage.objects.order_by('?')[0]
         bundle = self.build_bundle(obj=page, request=request)
         bundle = self.full_dehydrate(bundle)
         bundle = self.alter_detail_data_to_serialize(request, bundle)

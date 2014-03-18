@@ -324,3 +324,16 @@ class PipelineTests(ResourceTestCase):
             '/api/v1/homepage/mine/', authentication=self.get_credentials()
         )
         eq_(response.status_code, 200)
+
+    # Test throttle
+    def test_homepage2_random(self):
+        response = self.api_client.get(
+            '/api/v1/homepage2/random/', authentication=self.get_credentials()
+        )
+        eq_(response.status_code, 200)
+
+        # Should fail because this resource is throttled at 1.
+        response = self.api_client.get(
+            '/api/v1/homepage2/random/', authentication=self.get_credentials()
+        )
+        eq_(response.status_code, 429)
