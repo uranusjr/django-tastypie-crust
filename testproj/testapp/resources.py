@@ -5,7 +5,9 @@ import copy
 from django.contrib import auth
 from django.contrib.auth.models import User
 from tastypie import resources, fields
-from tastypie.authentication import SessionAuthentication, MultiAuthentication
+from tastypie.authentication import (
+    BasicAuthentication, SessionAuthentication, MultiAuthentication,
+)
 from tastypie.authorization import DjangoAuthorization
 from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.http import HttpUnauthorized, HttpForbidden, HttpNotFound
@@ -115,4 +117,5 @@ class HomePageResource(resources.ModelResource):
         queryset = Homepage.objects.all()
         resource_name = 'homepage'
         fields = ['id']
-        authentication = SessionAuthentication()
+        authentication = BasicAuthentication()
+        authorization = DjangoAuthorization()

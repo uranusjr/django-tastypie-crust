@@ -12,6 +12,7 @@ from nose.tools import (
     assert_greater, assert_false, assert_true
 )
 from tastypie.exceptions import NotFound
+from tastypie.test import ResourceTestCase
 from tastycrust import utils
 
 
@@ -146,9 +147,12 @@ class UserResourceTests(TestCase):
         eq_(old_count + 1, current_count)
 
 
-class UtilsTests(TestCase):
+class UtilsTests(ResourceTestCase):
 
     fixtures = ['users.json', 'homepages.json']
+
+    def get_credentials(self):
+        return self.create_basic('uranusjr', 'admin')
 
     def test_auth_source_basic(self):
         # No auth
@@ -290,9 +294,13 @@ class UtilsTests(TestCase):
         assert_true('email' in json.loads(response.content))
 
         # Mine
-        response = client.get('/api/v1/homepage/1/')
+        response = self.api_client.get(
+            '/api/v1/homepage/1/', authentication=self.get_credentials()
+        )
         assert_true('url' in json.loads(response.content))
 
         # Not mine
-        response = client.get('/api/v1/homepage/2/')
+        response = self.api_client.get(
+            '/api/v1/homepage/2/', authentication=self.get_credentials()
+        )
         assert_false('url' in json.loads(response.content))
