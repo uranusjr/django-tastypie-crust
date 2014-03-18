@@ -12,6 +12,7 @@ from nose.tools import (
     assert_greater, assert_false, assert_true
 )
 from tastypie.exceptions import NotFound
+from tastypie.test import ResourceTestCase
 from tastycrust import utils
 
 
@@ -146,9 +147,12 @@ class UserResourceTests(TestCase):
         eq_(old_count + 1, current_count)
 
 
-class UtilsTests(TestCase):
+class UtilsTests(ResourceTestCase):
 
     fixtures = ['users.json', 'homepages.json']
+
+    def get_credentials(self):
+        return self.create_basic('uranusjr', 'admin')
 
     def test_auth_source_basic(self):
         # No auth
@@ -290,9 +294,46 @@ class UtilsTests(TestCase):
         assert_true('email' in json.loads(response.content))
 
         # Mine
-        response = client.get('/api/v1/homepage/1/')
+        response = self.api_client.get(
+            '/api/v1/homepage/1/', authentication=self.get_credentials()
+        )
         assert_true('url' in json.loads(response.content))
 
         # Not mine
-        response = client.get('/api/v1/homepage/2/')
+        response = self.api_client.get(
+            '/api/v1/homepage/2/', authentication=self.get_credentials()
+        )
         assert_false('url' in json.loads(response.content))
+
+
+class PipelineTests(ResourceTestCase):
+
+    fixtures = ['users.json', 'homepages.json']
+
+    def get_credentials(self):
+        return self.create_basic('uranusjr', 'admin')
+
+    # Test login_required with basic auth.
+    def test_homepage_mine(self):
+        # Should not allow anonymous access.
+        response = self.api_client.get('/api/v1/homepage/mine/')
+        eq_(response.status_code, 401)
+
+        # Should allow basic auth.
+        response = self.api_client.get(
+            '/api/v1/homepage/mine/', authentication=self.get_credentials()
+        )
+        eq_(response.status_code, 200)
+
+    # Test throttle
+    def test_homepage2_random(self):
+        response = self.api_client.get(
+            '/api/v1/homepage2/random/', authentication=self.get_credentials()
+        )
+        eq_(response.status_code, 200)
+
+        # Should fail because this resource is throttled at 1.
+        response = self.api_client.get(
+            '/api/v1/homepage2/random/', authentication=self.get_credentials()
+        )
+        eq_(response.status_code, 429)

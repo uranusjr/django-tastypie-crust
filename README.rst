@@ -46,7 +46,7 @@ making those methods accessible throught Tastypie API.
 ::
 
     action(name=None, url=None, static=False,
-           allowed=None, login_required=False)
+           allowed=None, login_required=False, throttled=False)
 
 Decorator that makes extra resource methods accessible through Tastypie API.
 

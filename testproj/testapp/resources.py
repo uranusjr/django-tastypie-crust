@@ -5,8 +5,11 @@ import copy
 from django.contrib import auth
 from django.contrib.auth.models import User
 from tastypie import resources, fields
-from tastypie.authentication import SessionAuthentication, MultiAuthentication
+from tastypie.authentication import (
+    BasicAuthentication, SessionAuthentication, MultiAuthentication,
+)
 from tastypie.authorization import DjangoAuthorization
+from tastypie.throttle import CacheThrottle
 from tastypie.exceptions import ImmediateHttpResponse
 from tastypie.http import HttpUnauthorized, HttpForbidden, HttpNotFound
 from tastycrust.resources import ActionResourceMixin, action
@@ -106,7 +109,7 @@ class UserResource(ActionResourceMixin, resources.ModelResource):
         return self.create_response(request, {'email': request.user.email})
 
 
-class HomePageResource(resources.ModelResource):
+class HomePageResource(ActionResourceMixin, resources.ModelResource):
 
     url = fields.CharField(attribute='url', use_in=owned)
     user = fields.ToOneField(attribute='user', to=UserResource)
@@ -115,4 +118,35 @@ class HomePageResource(resources.ModelResource):
         queryset = Homepage.objects.all()
         resource_name = 'homepage'
         fields = ['id']
-        authentication = SessionAuthentication()
+        authentication = BasicAuthentication()
+        authorization = DjangoAuthorization()
+
+    @action(static=True, login_required=True)
+    def mine(self, request, *args, **kwargs):
+        try:
+            page = Homepage.objects.get(user=request.user)
+        except Homepage.DoesNotExist:
+            raise ImmediateHttpResponse(HttpNotFound())
+        bundle = self.build_bundle(obj=page, request=request)
+        bundle = self.full_dehydrate(bundle)
+        bundle = self.alter_detail_data_to_serialize(request, bundle)
+        return self.create_response(request, bundle)
+
+
+class ThrottledHomePageResource(ActionResourceMixin, resources.ModelResource):
+
+    class Meta:
+        queryset = Homepage.objects.all()
+        resource_name = 'homepage2'
+        fields = ['id']
+        authentication = BasicAuthentication()
+        authorization = DjangoAuthorization()
+        throttle = CacheThrottle(throttle_at=1)
+
+    @action(static=True, throttled=True)
+    def random(self, request, *args, **kwargs):
+        page = Homepage.objects.order_by('?')[0]
+        bundle = self.build_bundle(obj=page, request=request)
+        bundle = self.full_dehydrate(bundle)
+        bundle = self.alter_detail_data_to_serialize(request, bundle)
+        return self.create_response(request, bundle)
