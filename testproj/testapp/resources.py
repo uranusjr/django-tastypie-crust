@@ -108,7 +108,7 @@ class UserResource(ActionResourceMixin, resources.ModelResource):
         return self.create_response(request, {'email': request.user.email})
 
 
-class HomePageResource(resources.ModelResource):
+class HomePageResource(ActionResourceMixin, resources.ModelResource):
 
     url = fields.CharField(attribute='url', use_in=owned)
     user = fields.ToOneField(attribute='user', to=UserResource)
@@ -119,3 +119,14 @@ class HomePageResource(resources.ModelResource):
         fields = ['id']
         authentication = BasicAuthentication()
         authorization = DjangoAuthorization()
+
+    @action(static=True, login_required=True)
+    def mine(self, request, *args, **kwargs):
+        try:
+            page = Homepage.objects.get(user=request.user)
+        except Homepage.DoesNotExist:
+            raise ImmediateHttpResponse(HttpNotFound())
+        bundle = self.build_bundle(obj=page, request=request)
+        bundle = self.full_dehydrate(bundle)
+        bundle = self.alter_detail_data_to_serialize(request, bundle)
+        return self.create_response(request, bundle)

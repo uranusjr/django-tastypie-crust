@@ -304,3 +304,23 @@ class UtilsTests(ResourceTestCase):
             '/api/v1/homepage/2/', authentication=self.get_credentials()
         )
         assert_false('url' in json.loads(response.content))
+
+
+class PipelineTests(ResourceTestCase):
+
+    fixtures = ['users.json', 'homepages.json']
+
+    def get_credentials(self):
+        return self.create_basic('uranusjr', 'admin')
+
+    # Test login_required with basic auth.
+    def test_homepage_mine(self):
+        # Should not allow anonymous access.
+        response = self.api_client.get('/api/v1/homepage/mine/')
+        eq_(response.status_code, 401)
+
+        # Should allow basic auth.
+        response = self.api_client.get(
+            '/api/v1/homepage/mine/', authentication=self.get_credentials()
+        )
+        eq_(response.status_code, 200)
