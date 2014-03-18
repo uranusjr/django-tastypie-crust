@@ -66,7 +66,7 @@ class ActionResourceMixin(object):
                 url_name = 'api_action_static_' + action_name
             else:
                 pattern = (r'^(?P<resource_name>{resource})/'
-                           '(?P<{detail_uri}>.*?)/{name}{slash}$')
+                           r'(?P<{detail_uri}>.*?)/{name}{slash}$')
             pattern = pattern.format(
                 action_url=action_url,
                 resource=self._meta.resource_name,
