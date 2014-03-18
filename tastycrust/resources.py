@@ -18,7 +18,7 @@ def is_action(obj):
 
 
 def action(name=None, url=None, static=False,
-           allowed=None, login_required=False):
+           allowed=None, login_required=False, throttled=False):
 
     if callable(name):  # Used as @action without invoking
         wrapped = name
@@ -32,10 +32,11 @@ def action(name=None, url=None, static=False,
         def wrapper(self, request, *args, **kwargs):
             if allowed is not None:
                 self.method_check(request, allowed)
-            if login_required and not request.user.is_authenticated():
-                raise ImmediateHttpResponse(
-                    HttpUnauthorized('Log in required for this action')
-                )
+            if login_required:
+                self.is_authenticated(request)
+            if throttled:
+                self.throttle_check(request)
+                self.log_throttled_access(request)
             return func(self, request, *args, **kwargs)
 
         wrapper.is_action = True
